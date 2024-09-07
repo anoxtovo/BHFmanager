@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BHF Manager - System Status</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+
+  <!-- Main Container -->
+  <div class="container mx-auto px-4 py-12">
+    
+    <!-- Header Section -->
+    <header class="bg-white shadow-md rounded-lg p-6 flex items-center justify-between mb-10">
+      <div class="flex items-center space-x-4">
+        <h1 class="text-3xl font-bold text-gray-800">BHF Manager</h1>
+      </div>
+      <p>A Self-hosted File Server</p>
+    </header>
+
+    <!-- Dynamic Content will be inserted here -->
+    <section id="server-info-section" class="bg-white shadow-md rounded-lg p-6 mb-8">
+      <h2 class="text-2xl font-bold mb-6 text-gray-700">Server Information</h2>
+      <div id="server-info-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Dynamic server info will be added here -->
+      </div>
+    </section>
+
+    <!-- API Status Section -->
+    <section id="api-status-section" class="bg-white shadow-md rounded-lg p-6 mb-8">
+      <h2 class="text-2xl font-bold mb-6 text-gray-700">API Status</h2>
+      <div id="api-status-container" class="flex items-center justify-between">
+        <!-- Dynamic API status will be added here -->
+      </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="text-center text-gray-600 mt-10">
+      <p>&copy; 2024 My File Server. All rights reserved.</p>
+      <p class="text-sm">This is an open-source status page template.</p>
+    </footer>
+    
+  </div>
+
+  <!-- JavaScript to dynamically generate content -->
+  <script>
+    // Function to create a server info block dynamically
+    function createInfoBlock(title, value) {
+      const block = document.createElement('div');
+      block.classList.add('bg-gray-100', 'p-4', 'rounded-lg', 'shadow');
+      block.innerHTML = `
+        <h3 class="text-lg font-semibold text-gray-700">${title}</h3>
+        <p class="text-gray-600">${value}</p>
+      `;
+      return block;
+    }
+
+    // Fetch server status dynamically
+    async function fetchServerStatus() {
+      try {
+        const response = await fetch('/api/status');
+        const data = await response.json();
+
+        const serverInfoContainer = document.getElementById('server-info-container');
+        const apiStatusContainer = document.getElementById('api-status-container');
+
+        // Server Information
+        const serverInfo = [
+          { title: 'Server URL', value: data.serverInfo.url },
+          { title: 'Server Port', value: data.serverInfo.port },
+          { title: 'Database Name', value: data.serverInfo.databaseName },
+          { title: 'Database Status', value: data.serverInfo.databaseStatus },
+          { title: 'System Platform', value: data.systemInfo.platform },
+          { title: 'Processor Type', value: data.systemInfo.cpuModel },
+          { title: 'Total RAM', value: data.systemInfo.totalRAM },
+          { title: 'RAM Usage', value: data.systemInfo.ramUsage },
+          { title: 'System Uptime', value: data.systemInfo.uptime }
+        ];
+
+        // Clear existing server info content
+        serverInfoContainer.innerHTML = '';
+
+        // Dynamically add server info blocks
+        serverInfo.forEach(info => {
+          serverInfoContainer.appendChild(createInfoBlock(info.title, info.value));
+        });
+
+        // API Status
+        const statusBadge = document.createElement('span');
+        statusBadge.classList.add('text-sm', 'font-bold', 'py-1', 'px-3', 'rounded-full');
+        
+        const apiStatus = data.serverInfo.databaseStatus === 'Connected' ? 'Fully Operational' : 'Database Not Connected';
+        const badgeColor = data.serverInfo.databaseStatus === 'Connected' ? 'bg-green-500' : 'bg-red-500';
+
+        statusBadge.textContent = apiStatus;
+        statusBadge.classList.add(badgeColor, 'text-white');
+        
+        // Clear existing API status content
+        apiStatusContainer.innerHTML = '';
+
+        // Add API Status dynamically
+        apiStatusContainer.appendChild(createInfoBlock('Status', apiStatus));
+        apiStatusContainer.appendChild(statusBadge);
+
+      } catch (error) {
+        console.error('Error fetching server status:', error);
+        
+        // Display error message in API status section
+        const apiStatusContainer = document.getElementById('api-status-container');
+        apiStatusContainer.innerHTML = `
+          <span class="text-red-500">Error fetching server status</span>
+        `;
+      }
+    }
+
+    // Call the function to fetch and display server status
+    fetchServerStatus();
+  </script>
+
+</body>
+</html>
